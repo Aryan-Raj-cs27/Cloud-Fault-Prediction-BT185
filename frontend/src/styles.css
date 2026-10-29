@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; color: #e8ebf5; background: #0b1020; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #0b1020; }
+button, input, select { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+select option { color: #e2e8f0; background: #131b2e; }
+::selection { background: rgba(124,108,255,.35); }
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+.dashboard-shell { background-image: radial-gradient(ellipse at 75% -12%, rgba(111, 85, 235, .11), transparent 42%), radial-gradient(ellipse at 12% 35%, rgba(14, 116, 144, .055), transparent 34%); background-attachment: fixed; }
+.shadow-card { transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.shadow-card:hover { border-color: rgba(167, 139, 250, .16); box-shadow: 0 16px 44px rgba(12, 19, 40, .24); }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.range-control { accent-color: #8d7cff; }
+.recharts-cartesian-grid-horizontal line, .recharts-cartesian-grid-vertical line { stroke: rgba(148,163,184,.1); }
+.recharts-tooltip-cursor { stroke: rgba(141,124,255,.35); }
+@keyframes faultPulse { 50% { box-shadow: 0 0 0 7px rgba(248,113,113,.12), 0 0 32px rgba(248,113,113,.2); } }
+.fault-pulse { animation: faultPulse 1.6s ease-in-out infinite; }
+
+/* A restrained light theme is available from the top-bar theme control. */
+.light-theme { background: #f3f5fb !important; color: #172033 !important; }
+.light-theme.dashboard-shell { background-image: radial-gradient(ellipse at 75% -12%, rgba(139, 92, 246, .06), transparent 42%); }
+.light-theme header { background: rgba(248, 250, 255, .92) !important; border-color: #e4e8f1 !important; }
+.light-theme aside { background: #fff !important; border-color: #e4e8f1 !important; }
+.light-theme [class*="bg-[#11182a]"], .light-theme [class*="bg-[#131b2e]"], .light-theme [class*="bg-[#0c1222]"] { background-color: #fff !important; }
+.light-theme [class*="bg-[#0b1020]"] { background-color: #f3f5fb !important; }
+.light-theme [class*="border-white/"] { border-color: #e4e8f1 !important; }
+.light-theme [class*="text-slate-100"], .light-theme [class*="text-slate-200"] { color: #172033 !important; }
+.light-theme [class*="text-slate-300"] { color: #34415a !important; }
+.light-theme [class*="text-slate-400"], .light-theme [class*="text-slate-500"] { color: #69758b !important; }
+.light-theme [class*="hover:bg-white"]:hover { background-color: #eef0f7 !important; }
+.light-theme .recharts-cartesian-grid-horizontal line, .light-theme .recharts-cartesian-grid-vertical line { stroke: rgba(71, 85, 105, .13); }
