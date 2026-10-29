@@ -1,13 +1,10 @@
 import { useRef, useState } from 'react';
 import { Activity, Check, FileSpreadsheet, Play, UploadCloud } from 'lucide-react';
 
-const initial = { cpu_load: 42, memory_usage: 68, network_io: 31, disk_usage: 54, temperature: 62 };
+const initial = { total_logs: 24, unique_components: 3 };
 const fields = [
-  { key: 'cpu_load', label: 'CPU load', unit: '%', min: 0, max: 100 },
-  { key: 'memory_usage', label: 'Memory usage', unit: '%', min: 0, max: 100 },
-  { key: 'network_io', label: 'Network I/O', unit: 'MB/s', min: 0, max: 100 },
-  { key: 'disk_usage', label: 'Disk usage', unit: '%', min: 0, max: 100 },
-  { key: 'temperature', label: 'Temperature', unit: '°C', min: 20, max: 100 },
+  { key: 'total_logs', label: 'Logs in block', unit: 'logs', min: 0, max: 1000 },
+  { key: 'unique_components', label: 'Unique components', unit: 'components', min: 0, max: 100 },
 ];
 
 function parseCsv(text) {
@@ -54,11 +51,12 @@ export default function InferencePanel({ mode, runInference, running, setRunning
 
   if (mode === 'stream') return <section className="rounded-2xl border border-white/[.07] bg-[#11182a] p-5 shadow-card sm:p-6">
     <div className="flex items-start gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300"><Activity size={17} /></span><div className="flex-1"><h2 className="text-sm font-semibold text-slate-100">Live inference stream</h2><p className="mt-1 text-xs text-slate-500">Poll the prediction API every 2 seconds</p></div><span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${running ? 'bg-emerald-400/10 text-emerald-300' : 'bg-slate-700/50 text-slate-400'}`}>{running ? 'STREAMING' : 'PAUSED'}</span></div>
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[.06] bg-[#0c1222] p-4"><div><div className="text-xs font-medium text-slate-300">Automated health checks</div><div className="mt-1 text-[11px] text-slate-500">New telemetry is sent to the active model on each poll.</div></div><button onClick={() => setRunning(!running)} className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition ${running ? 'border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]' : 'bg-violet-500 text-white shadow-glow hover:bg-violet-400'}`}><Play size={14} className={running ? 'hidden' : 'fill-current'} />{running ? 'Pause stream' : 'Start stream'}</button></div>
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[.06] bg-[#0c1222] p-4"><div><div className="text-xs font-medium text-slate-300">Simulated log-block stream</div><div className="mt-1 text-[11px] text-slate-500">Sends generated log counts to the Random Forest every 2 seconds.</div></div><button onClick={() => setRunning(!running)} className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition ${running ? 'border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]' : 'bg-violet-500 text-white shadow-glow hover:bg-violet-400'}`}><Play size={14} className={running ? 'hidden' : 'fill-current'} />{running ? 'Pause stream' : 'Start stream'}</button></div>
   </section>;
 
   if (mode === 'manual') return <section className="rounded-2xl border border-white/[.07] bg-[#11182a] p-5 shadow-card sm:p-6">
-    <div className="flex items-start gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-400/10 text-violet-300"><Activity size={17} /></span><div><h2 className="text-sm font-semibold text-slate-100">Evaluate a single sample</h2><p className="mt-1 text-xs text-slate-500">Adjust telemetry values, then request a prediction</p></div></div>
+    <div className="flex items-start gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-400/10 text-violet-300"><Activity size={17} /></span><div><h2 className="text-sm font-semibold text-slate-100">Evaluate a single sample</h2><p className="mt-1 text-xs text-slate-500">Adjust the log-block features, then request a prediction</p></div></div>
+    <p className="mt-3 text-[10px] text-slate-500">These are the features expected by the saved model, not server CPU or memory telemetry.</p>
     <div className="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2">
       {fields.map((field) => <label key={field.key}><span className="flex items-center justify-between text-[11px] font-medium text-slate-400"><span>{field.label}</span><span className="font-semibold text-slate-200">{values[field.key]} <span className="font-normal text-slate-500">{field.unit}</span></span></span><input aria-label={field.label} className="range-control mt-2 w-full cursor-pointer" type="range" min={field.min} max={field.max} value={values[field.key]} onChange={(event) => setValues((current) => ({ ...current, [field.key]: Number(event.target.value) }))} /></label>)}
     </div>

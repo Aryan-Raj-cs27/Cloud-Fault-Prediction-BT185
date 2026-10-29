@@ -16,6 +16,13 @@ const initialLogs = [
   { id: 'log-4', timestamp: new Date(Date.now() - 132000).toISOString(), model: 'CNN-LSTM', status: 'Normal', confidence: 99, latency: 38 },
 ];
 
+function simulatedLogBlock() {
+  return {
+    total_logs: 5 + Math.floor(Math.random() * 96),
+    unique_components: 1 + Math.floor(Math.random() * 8),
+  };
+}
+
 function mapMetrics(payload) {
   const rows = payload?.models || payload?.comparison || payload?.metrics;
   if (!Array.isArray(rows)) return null;
@@ -88,7 +95,7 @@ export function useMonitor() {
   useEffect(() => {
     if (!running) return undefined;
     // Real-time polling requests one new inference on the configured backend every 2 seconds.
-    const timer = setInterval(() => { runInference(); }, 2000);
+    const timer = setInterval(() => { runInference(simulatedLogBlock()); }, 2000);
     return () => clearInterval(timer);
   }, [running, runInference]);
 
