@@ -8,8 +8,8 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Data (Never push raw datasets to GitHub)
-data/*.csv
-data/*.json
+data/*
+!data/.gitkeep
 
 # OS Files
 .DS_Store
