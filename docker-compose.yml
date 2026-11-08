@@ -1,0 +1,35 @@
+# Production-style stack:  docker compose up -d --build
+#   caddy  -> HTTPS on :443 (automatic certificates for $DOMAIN, local CA for "localhost")
+#   app    -> FastAPI serving the dashboard (/) and the API (/api), not exposed directly
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      FAULTAWARE_COOKIE_SECURE: "1"
+      CORS_ORIGINS: https://${DOMAIN:-localhost}
+    volumes:
+      - ./models:/srv/models:ro
+      - ./reports:/srv/reports:ro
+      - ./secrets:/srv/secrets:ro
+      - ./app/demo_samples.json:/srv/app/demo_samples.json:ro
+    expose: ["8000"]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

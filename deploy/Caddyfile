@@ -1,0 +1,9 @@
+# TLS-terminating reverse proxy. With a public DOMAIN, Caddy obtains a Let's Encrypt
+# certificate automatically; with "localhost" it uses its own local CA.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:8000
+	header {
+		-Server
+	}
+}
