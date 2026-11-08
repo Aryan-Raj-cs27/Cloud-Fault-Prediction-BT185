@@ -321,6 +321,8 @@ def metrics(window: str | None = Query(default=None, pattern="^(w60|w10|full)$")
                 "val_pr_auc": _mean(r["val_pr_auc"]),
                 "test_pr_auc": _mean(r["test_pr_auc"]),
                 "test_f1": _mean(r["test_f1"]),
+                "test_precision": _mean(r.get("test_precision")),
+                "test_recall": _mean(r.get("test_recall")),
                 "test_alive": r["test_alive"],
             }
             for r in w.get("early_warning") or []
