@@ -1,0 +1,38 @@
+# Discrete-event cloud simulator (SimPy). Time unit: minutes.
+n_nodes: 40
+node_capacity: {cpu: 1.0, mem: 1.0}
+n_tasks: 5000
+arrival_rate_per_min: 2.6        # Poisson arrivals (~60% mean utilisation)
+task_duration: {mean_log: 3.6, sigma_log: 0.8, min: 5, max: 600}   # lognormal minutes
+task_cpu: [0.05, 0.35]
+task_mem: [0.05, 0.35]
+deadline_slack: 1.3              # deadline = arrival + slack * duration
+tick_min: 5                      # scheduler decision interval Δt
+
+faults:
+  weibull_shape: 1.5
+  weibull_scale_min: 1800        # characteristic time between node failures
+  precursor_min: [15, 60]        # degradation window before a predictable failure
+  unpredictable_fraction: 0.2    # failures with no precursor signal
+  repair_min: 30
+
+mitigation:
+  checkpoint_interval_min: 30    # default periodic checkpointing for every scheduler
+  checkpoint_cost_min: 1.0
+  migration_time_min: 0.5        # 30 s
+  restart_penalty_min: 2.0
+
+energy: {idle_w: 100.0, peak_w: 250.0}
+
+# Signal model: per-tick risk scores for each node are sampled from the empirical score
+# distribution of the real HDFS fault predictor (positive class while degraded, negative
+# otherwise). See docs/DECISIONS.md D-009.
+signal:
+  source: empirical              # empirical | oracle | random
+  noise: 0.0                     # probability a tick's score is replaced by U(0,1)
+  persistent: true               # one score per degradation episode (conservative)
+  scores_file: models/fusion/score_distributions.npz
+
+seeds:
+  validation: [100, 101, 102, 103, 104]
+  test: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]

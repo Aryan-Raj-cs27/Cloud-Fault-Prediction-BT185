@@ -1,0 +1,89 @@
+# Per-model hyperparameters. Tuned values (Optuna, validation PR-AUC) are written to
+# configs/model/tuned.yaml by scripts/tune.py and take precedence when present.
+always_zero: {kind: baseline}
+random_rate: {kind: baseline}
+rule_warn: {kind: baseline}
+
+logreg:
+  kind: tabular
+  C: 1.0
+  max_iter: 2000
+  imbalance: class_weight      # class_weight | smote | none
+
+random_forest:
+  kind: tabular
+  n_estimators: 300
+  max_depth: null
+  min_samples_leaf: 1
+  max_features: sqrt
+  imbalance: class_weight
+  n_jobs: 8
+
+xgboost:
+  kind: tabular
+  n_estimators: 400
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.9
+  colsample_bytree: 0.9
+  min_child_weight: 1.0
+  reg_lambda: 1.0
+  imbalance: class_weight
+  n_jobs: 8
+  early_stopping_rounds: 30
+
+lstm:
+  kind: sequence
+  arch: lstm
+  embed_dim: 32
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.2
+  bidirectional: false
+
+gru:
+  kind: sequence
+  arch: gru
+  embed_dim: 32
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.2
+  bidirectional: false
+
+cnn_lstm:
+  kind: sequence
+  arch: cnn_lstm
+  embed_dim: 32
+  conv_channels: 64
+  kernel_size: 3
+  hidden_dim: 64
+  num_layers: 1
+  dropout: 0.2
+
+transformer:
+  kind: sequence
+  arch: transformer
+  embed_dim: 64
+  num_heads: 4
+  num_layers: 2
+  ff_dim: 128
+  dropout: 0.1
+
+iforest:
+  kind: anomaly_tabular
+  n_estimators: 200
+  max_samples: 4096
+  contamination: auto
+  n_jobs: 8
+
+lstm_ae:
+  kind: anomaly_sequence
+  embed_dim: 32
+  hidden_dim: 64
+  num_layers: 1
+  dropout: 0.0
+  max_epochs: 15
+
+# Imbalance-handling variants (CLAUDE.md §7.2: compare class weights vs SMOTE / focal loss)
+random_forest_smote: {base: random_forest, imbalance: smote}
+lstm_focal: {base: lstm, imbalance: focal}
