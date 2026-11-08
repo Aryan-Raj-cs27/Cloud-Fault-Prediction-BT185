@@ -4,10 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "faultaware"
-version = "1.0.0"
+version = "1.1.0"
 description = "BT-185: Fault-Aware ML/DL-based algorithm for cloud architecture (failure prediction + FARS scheduler)"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
+license = { text = "MIT" }
 authors = [
   { name = "Aryan Raj" },
   { name = "Dheeraj Kumar" },

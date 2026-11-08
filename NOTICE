@@ -1,0 +1,26 @@
+FaultAware (BT-185) — third-party notices
+
+The source code in this repository is released under the MIT License (see LICENSE).
+That licence covers the code only. It does not cover the dataset or the third-party
+software listed below, which keep their own terms.
+
+Dataset (not redistributed in this repository)
+------------------------------------------------
+HDFS_v1 log dataset, distributed by Loghub (https://github.com/logpai/loghub).
+Originally collected by Xu et al., "Detecting Large-Scale System Problems by Mining
+Console Logs", SOSP 2009. Loghub datasets are provided for research purposes.
+scripts/download_data.py fetches it from the source; users must follow Loghub's terms
+and cite Loghub and Xu et al. when publishing results.
+
+Derived artefacts
+-----------------
+The generated tables and figures in reports/ and the release bundle (trained models,
+score distributions, demo samples) are derived from HDFS_v1. Use them for research and
+education under the dataset's terms.
+
+Third-party software
+--------------------
+Python dependencies (requirements.txt, pyproject.toml) and JavaScript dependencies
+(frontend/package.json) are installed from their public registries and are licensed
+by their respective authors (BSD, MIT and Apache-2.0 licences, among others).
+The console loads the IBM Plex fonts (SIL Open Font License 1.1) from Google Fonts.
