@@ -1,56 +1,143 @@
-import { useState } from 'react';
-import { Activity, Bell, CheckCircle2, Menu, Moon, Sun, X } from 'lucide-react';
-import Dashboard from './components/Dashboard.jsx';
+import { useEffect, useState } from 'react';
+import { Activity, BarChart3, BookOpen, LayoutGrid, LogOut, Menu, Network, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import Performance from './components/Performance.jsx';
-import PredictionLogs from './components/PredictionLogs.jsx';
-import Sidebar from './components/Sidebar.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import { useMonitor } from './hooks/useMonitor.js';
+import { AuthProvider, useAuth } from './lib/auth.jsx';
+import { ThemeProvider } from './lib/theme.jsx';
+import Overview from './pages/Overview.jsx';
+import LiveInference from './pages/LiveInference.jsx';
+import Login from './pages/Login.jsx';
+import Models from './pages/Models.jsx';
+import Scheduling from './pages/Scheduling.jsx';
+import Method from './pages/Method.jsx';
 
-const navTabs = [{ id: 'overview', label: 'Overview' }, { id: 'performance', label: 'Model analytics' }, { id: 'logs', label: 'Prediction history' }];
+const ROUTES = [
+  { id: 'overview', label: 'Overview', Icon: LayoutGrid, Page: Overview },
+  { id: 'inference', label: 'Live inference', Icon: Activity, Page: LiveInference },
+  { id: 'models', label: 'Models', Icon: BarChart3, Page: Models },
+  { id: 'scheduling', label: 'FARS scheduling', Icon: Network, Page: Scheduling },
+  { id: 'method', label: 'Data & method', Icon: BookOpen, Page: Method },
+];
 
-function Toast({ toast, dismiss }) {
-  if (!toast) return null;
-  return <div role="status" className={`fixed bottom-5 right-5 z-[60] flex max-w-sm items-center gap-3 rounded-xl border px-4 py-3 shadow-2xl animate-fade-in ${toast.type === 'error' ? 'border-rose-400/20 bg-[#241522] text-rose-100' : 'border-emerald-400/20 bg-[#10231f] text-emerald-100'}`}><CheckCircle2 size={17} className={toast.type === 'error' ? 'text-rose-300' : 'text-emerald-300'} /><span className="flex-1 text-xs">{toast.message}</span><button aria-label="Dismiss notification" onClick={dismiss} className="text-slate-400 hover:text-white"><X size={14} /></button></div>;
+const readRoute = () => ROUTES.find((r) => `#/${r.id}` === window.location.hash)?.id ?? 'overview';
+
+function useRoute() {
+  const [route, setRoute] = useState(readRoute);
+  useEffect(() => {
+    const onHash = () => { setRoute(readRoute()); window.scrollTo({ top: 0 }); };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  return [route, (id) => { window.location.hash = `/${id}`; }];
 }
 
-function App() {
-  const monitor = useMonitor();
-  const [mode, setMode] = useState('stream');
-  const [tab, setTab] = useState('overview');
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [lightMode, setLightMode] = useState(false);
-  const [toast, setToast] = useState(null);
-  const notify = (message, type = 'success') => {
-    setToast({ message, type });
-    window.clearTimeout(window.toastTimeout);
-    window.toastTimeout = window.setTimeout(() => setToast(null), 4200);
-  };
-  const changeTab = (next) => {
-    setTab(next);
-    document.getElementById(next)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+function usePersistentFlag(key, initial) {
+  const [value, setValue] = useState(() => { try { return localStorage.getItem(key) === '1' ? true : localStorage.getItem(key) === '0' ? false : initial; } catch { return initial; } });
+  const set = (v) => { setValue(v); try { localStorage.setItem(key, v ? '1' : '0'); } catch { /* storage unavailable */ } };
+  return [value, set];
+}
 
-  return <div className={`${lightMode ? 'light-theme' : ''} dashboard-shell min-h-screen bg-[#0b1020] text-slate-100`}>
-    <Sidebar model={monitor.model} setModel={monitor.setModel} mode={mode} setMode={setMode} running={monitor.running} setRunning={monitor.setRunning} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
-    <div className="min-h-screen lg:pl-[264px]">
-      <header className="sticky top-0 z-20 border-b border-white/[.06] bg-[#0b1020]/90 px-4 backdrop-blur-xl sm:px-7 lg:px-9">
-        <div className="flex h-[68px] items-center gap-3"><button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 lg:hidden"><Menu size={19} /></button><div className="min-w-0 flex-1"><div className="hidden text-[10px] font-medium text-slate-500 sm:block">Cloud infrastructure <span className="mx-1.5 text-slate-700">/</span> <span className="text-slate-400">Monitoring</span></div><div className="flex items-center gap-2 sm:mt-1"><span className="font-display text-sm font-semibold text-slate-100">{navTabs.find((item) => item.id === tab)?.label}</span><span className="hidden rounded-md bg-white/[.04] px-1.5 py-0.5 text-[9px] text-slate-500 sm:inline">LIVE</span></div></div><div className="hidden items-center gap-1 rounded-lg border border-white/[.07] bg-white/[.025] p-1 md:flex">{navTabs.map((item) => <button key={item.id} onClick={() => changeTab(item.id)} className={`rounded-md px-3 py-1.5 text-[10px] font-medium transition ${tab === item.id ? 'bg-violet-500/15 text-violet-200' : 'text-slate-500 hover:text-slate-200'}`}>{item.label}</button>)}</div><div className="flex items-center gap-1.5"><span className="mr-1 hidden items-center gap-1.5 rounded-full border border-emerald-400/10 bg-emerald-400/[.05] px-2.5 py-1.5 text-[9px] font-medium text-emerald-300 sm:flex"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />LIVE</span><button aria-label="Toggle color theme" onClick={() => setLightMode(!lightMode)} className="rounded-lg p-2 text-slate-400 transition hover:bg-white/[.06] hover:text-slate-200">{lightMode ? <Sun size={17} /> : <Moon size={16} />}</button><button aria-label="Notifications" onClick={() => notify(monitor.waking ? 'Backend is waking up; retrying automatically.' : 'You’re all caught up.', monitor.waking ? 'error' : 'success')} className="relative rounded-lg p-2 text-slate-400 transition hover:bg-white/[.06] hover:text-slate-200"><Bell size={16} />{monitor.waking && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-amber-400" />}</button><div className="ml-1 grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-gradient-to-br from-indigo-400 to-violet-600 text-[10px] font-bold text-white">CF</div></div></div>
-        <div className="-mx-1 flex gap-1 overflow-x-auto pb-2 md:hidden">{navTabs.map((item) => <button key={item.id} onClick={() => changeTab(item.id)} className={`shrink-0 rounded-lg px-3 py-1.5 text-[10px] font-medium ${tab === item.id ? 'bg-violet-500/15 text-violet-200' : 'text-slate-500'}`}>{item.label}</button>)}</div>
-      </header>
-      <main className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-7 sm:py-7 lg:px-9 lg:py-8">
-        <div className="flex flex-wrap items-end justify-between gap-3"><div><div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.19em] text-violet-300"><Activity size={13} /> Infrastructure intelligence</div><h1 className="font-display mt-2 text-2xl font-semibold tracking-tight text-slate-50 sm:text-[30px]">Cloud health overview</h1><p className="mt-1.5 text-xs text-slate-500">Monitor telemetry, detect faults, and evaluate model performance.</p></div><div className="flex items-center gap-2 rounded-lg border border-white/[.07] bg-white/[.025] px-3 py-2 text-[10px] text-slate-400"><span className={`h-1.5 w-1.5 rounded-full ${monitor.connection === 'online' ? 'bg-emerald-400' : 'bg-amber-400'}`} />Updated {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>
-        {tab === 'overview' && <Dashboard monitor={monitor} mode={mode} setRunning={monitor.setRunning} notify={notify} />}
-        {tab === 'performance' && <Performance metrics={monitor.metrics} loadMetrics={monitor.loadMetrics} />}
-        {tab === 'logs' && <PredictionLogs logs={monitor.logs} preview={monitor.preview} />}
-        {tab === 'overview' && <><div className="flex flex-wrap items-center justify-between gap-2 pt-1"><h2 className="font-display text-sm font-semibold text-slate-200">Recent predictions</h2><button onClick={() => changeTab('logs')} className="text-[10px] font-semibold text-violet-300 hover:text-violet-200">View all history →</button></div><PredictionLogs logs={monitor.logs.slice(0, 5)} preview={monitor.preview} /></>}
-        <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[.05] pt-4 text-[9px] text-slate-600"><span>Sentinel · IoT server health monitoring</span><span>Machine learning powered fault detection</span></footer>
-      </main>
-    </div>
-    <Toast toast={toast} dismiss={() => setToast(null)} />
+function Brand({ collapsed }) {
+  return <div className="flex h-12 items-center gap-2 overflow-hidden px-[18px]">
+    <svg width="20" height="20" viewBox="0 0 16 16" className="shrink-0" aria-hidden><rect width="16" height="16" rx="3" fill="rgb(var(--accent))" /><path d="M3 10h2l2-5 2 7 2-4h2" stroke="white" strokeWidth="1.5" fill="none" /></svg>
+    <div className={`whitespace-nowrap leading-tight transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}><div className="text-[13px] font-semibold">FaultAware</div><div className="text-2xs text-ink3">Console · BT-185</div></div>
   </div>;
 }
 
-export default function AppRoot() {
-  return <ErrorBoundary><App /></ErrorBoundary>;
+function NavItems({ route, collapsed, onNavigate }) {
+  return <nav className="flex flex-col gap-0.5 p-2" aria-label="Main">
+    {ROUTES.map(({ id, label, Icon }) => {
+      const active = route === id;
+      return <a key={id} href={`#/${id}`} onClick={onNavigate} aria-current={active ? 'page' : undefined} aria-label={collapsed ? label : undefined}
+        className={`group relative flex h-9 items-center gap-3 rounded px-[11px] text-[13px] transition-colors duration-150 ${active ? 'bg-sunken font-medium text-ink' : 'text-ink2 hover:bg-sunken hover:text-ink'}`}>
+        <span className={`absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-accent transition-opacity duration-200 ${active ? 'opacity-100' : 'opacity-0'}`} />
+        <Icon size={16} className={`shrink-0 transition-colors ${active ? 'text-accent' : 'text-ink3 group-hover:text-ink2'}`} />
+        <span className={`whitespace-nowrap transition-opacity duration-200 ${collapsed ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>{label}</span>
+        {collapsed && <span role="tooltip" className="pointer-events-none absolute left-full z-50 ml-2 whitespace-nowrap rounded border border-line bg-surface px-2 py-1 text-xs text-ink opacity-0 shadow-md transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">{label}</span>}
+      </a>;
+    })}
+  </nav>;
+}
+
+function UserMenu({ user, onSignOut }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (e) => { if (!e.target.closest?.('[data-user-menu]')) setOpen(false); };
+    const esc = (e) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', close); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', esc); };
+  }, [open]);
+  return <div className="relative" data-user-menu>
+    <button onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open}
+      className="flex h-8 items-center gap-2 rounded border border-line bg-surface pl-1 pr-2.5 text-xs transition-colors hover:bg-sunken">
+      <span className="grid h-6 w-6 place-items-center rounded-[4px] bg-accent/15 text-2xs font-semibold uppercase text-accent">{user.slice(0, 2)}</span>
+      <span className="hidden sm:inline">{user}</span>
+    </button>
+    <div role="menu" className={`absolute right-0 mt-1 w-48 origin-top-right rounded border border-line bg-surface py-1 shadow-lg transition-all duration-150 ${open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'}`}>
+      <div className="border-b border-line px-3 py-2 text-2xs text-ink3">Signed in as <span className="font-medium text-ink">{user}</span></div>
+      <button role="menuitem" onClick={onSignOut} className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-ink2 hover:bg-sunken hover:text-ink"><LogOut size={14} /> Sign out</button>
+    </div>
+  </div>;
+}
+
+function Console() {
+  const { user, signOut } = useAuth();
+  const monitor = useMonitor();
+  const [route, go] = useRoute();
+  const [collapsed, setCollapsed] = usePersistentFlag('fa-nav-collapsed', false);
+  const [drawer, setDrawer] = useState(false);
+  const current = ROUTES.find((r) => r.id === route);
+  const offline = monitor.connection === 'offline';
+
+  return <div className="min-h-screen bg-bg text-ink">
+    <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-line bg-surface transition-[width] duration-200 ease-out lg:flex ${collapsed ? 'w-[60px]' : 'w-56'}`}>
+      <Brand collapsed={collapsed} />
+      <NavItems route={route} collapsed={collapsed} />
+      <div className="mt-auto border-t border-line p-2">
+        <button onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="flex h-9 w-full items-center gap-3 rounded px-[11px] text-xs text-ink3 transition-colors hover:bg-sunken hover:text-ink">
+          {collapsed ? <PanelLeftOpen size={16} className="shrink-0" /> : <PanelLeftClose size={16} className="shrink-0" />}
+          <span className={`whitespace-nowrap transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>Collapse</span>
+        </button>
+      </div>
+    </aside>
+
+    <div className={`fixed inset-0 z-40 lg:hidden ${drawer ? '' : 'pointer-events-none'}`} aria-hidden={!drawer}>
+      <button tabIndex={drawer ? 0 : -1} aria-label="Close menu" onClick={() => setDrawer(false)} className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${drawer ? 'opacity-100' : 'opacity-0'}`} />
+      <aside className={`relative flex h-full w-64 flex-col border-r border-line bg-surface transition-transform duration-200 ease-out ${drawer ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-between"><Brand collapsed={false} /><button aria-label="Close menu" onClick={() => setDrawer(false)} className="mr-2 p-2 text-ink3 hover:text-ink"><X size={16} /></button></div>
+        <NavItems route={route} collapsed={false} onNavigate={() => setDrawer(false)} />
+      </aside>
+    </div>
+
+    <div className={`transition-[padding] duration-200 ease-out ${collapsed ? 'lg:pl-[60px]' : 'lg:pl-56'}`}>
+      <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b border-line bg-surface/90 px-4 backdrop-blur">
+        <button aria-label="Open menu" onClick={() => setDrawer(true)} className="-ml-1 p-1 text-ink2 lg:hidden"><Menu size={18} /></button>
+        <div className="min-w-0 flex-1 truncate text-xs text-ink3"><span className="hidden sm:inline">hdfs-v1<span className="mx-1.5">/</span>test-period replay<span className="mx-1.5">/</span></span><span className="font-medium text-ink">{current.label}</span></div>
+        <span className="hidden items-center gap-1.5 rounded border border-line px-2 py-1 text-2xs text-ink2 sm:inline-flex" title="API status">
+          <span className={`h-1.5 w-1.5 rounded-full ${{ online: 'bg-ok', degraded: 'bg-warn', offline: 'bg-crit' }[monitor.connection] ?? 'bg-ink3'}`} />
+          {{ online: 'API online', degraded: 'Models pending', offline: 'API offline' }[monitor.connection] ?? 'Connecting'}
+        </span>
+        <ThemeToggle />
+        <UserMenu user={user} onSignOut={signOut} />
+      </header>
+      <main className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6">
+        {monitor.health?.status === 'degraded' && <div className="fa-enter mb-4 rounded border border-warn/30 bg-warn/10 px-3 py-2 text-xs text-ink">{monitor.health.detail}</div>}
+        {offline && <div className="fa-enter mb-4 rounded border border-crit/30 bg-crit/10 px-3 py-2 text-xs text-ink">Cannot reach the API. Start it with <span className="font-mono">make api</span> (or <span className="font-mono">.\make.ps1 api</span>).</div>}
+        <div key={route} className="fa-page"><current.Page monitor={monitor} go={go} /></div>
+      </main>
+    </div>
+  </div>;
+}
+
+function Gate() {
+  const { status } = useAuth();
+  if (status === 'checking') return <div className="grid min-h-screen place-items-center bg-bg"><span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent" aria-label="Loading" /></div>;
+  return status === 'authed' ? <Console /> : <Login />;
+}
+
+export default function App() {
+  return <ErrorBoundary><ThemeProvider><AuthProvider><Gate /></AuthProvider></ThemeProvider></ErrorBoundary>;
 }

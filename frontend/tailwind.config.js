@@ -1,32 +1,30 @@
 /** @type {import('tailwindcss').Config} */
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
-  darkMode: 'class',
+  darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
-      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+      fontFamily: {
+        sans: ['"IBM Plex Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
       colors: {
-        ink: '#101828',
-        midnight: '#0b1020',
-        panel: '#11182b',
-        muted: '#8691a9',
-        accent: '#7c6cff',
-        mint: '#43d9ad',
+        bg: token('bg'),
+        surface: token('surface'),
+        sunken: token('sunken'),
+        line: token('line'),
+        ink: token('ink'),
+        ink2: token('ink2'),
+        ink3: token('ink3'),
+        accent: token('accent'),
+        ok: token('ok'),
+        warn: token('warn'),
+        crit: token('crit'),
       },
-      boxShadow: {
-        glow: '0 0 28px rgba(124, 108, 255, 0.18)',
-        card: '0 12px 40px rgba(12, 19, 40, 0.18)',
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-out both',
-        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
-        float: 'float 5s ease-in-out infinite',
-      },
-      keyframes: {
-        fadeIn: { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-        pulseSoft: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '.55' } },
-        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-5px)' } },
-      },
+      fontSize: { '2xs': ['11px', '16px'] },
+      borderRadius: { DEFAULT: '6px' },
     },
   },
   plugins: [],

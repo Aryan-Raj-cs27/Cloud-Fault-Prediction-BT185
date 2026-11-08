@@ -1,37 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root { font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; color: #e8ebf5; background: #0b1020; font-synthesis: none; text-rendering: optimizeLegibility; }
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: #0b1020; }
-button, input, select { font: inherit; }
-button { -webkit-tap-highlight-color: transparent; }
-select option { color: #e2e8f0; background: #131b2e; }
-::selection { background: rgba(124,108,255,.35); }
-.font-display { font-family: 'Space Grotesk', sans-serif; }
-.dashboard-shell { background-image: radial-gradient(ellipse at 75% -12%, rgba(111, 85, 235, .11), transparent 42%), radial-gradient(ellipse at 12% 35%, rgba(14, 116, 144, .055), transparent 34%); background-attachment: fixed; }
-.shadow-card { transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
-.shadow-card:hover { border-color: rgba(167, 139, 250, .16); box-shadow: 0 16px 44px rgba(12, 19, 40, .24); }
-.scrollbar-none { scrollbar-width: none; }
-.scrollbar-none::-webkit-scrollbar { display: none; }
-.range-control { accent-color: #8d7cff; }
-.recharts-cartesian-grid-horizontal line, .recharts-cartesian-grid-vertical line { stroke: rgba(148,163,184,.1); }
-.recharts-tooltip-cursor { stroke: rgba(141,124,255,.35); }
-@keyframes faultPulse { 50% { box-shadow: 0 0 0 7px rgba(248,113,113,.12), 0 0 32px rgba(248,113,113,.2); } }
-.fault-pulse { animation: faultPulse 1.6s ease-in-out infinite; }
+/* Design tokens (RGB triplets). Light is the default; dark follows the OS unless the
+   viewer picks a theme, which is stored on <html data-theme>. */
+:root {
+  color-scheme: light;
+  --bg: 245 246 248;
+  --surface: 255 255 255;
+  --sunken: 240 242 245;
+  --line: 222 226 231;
+  --ink: 20 23 28;
+  --ink2: 72 79 89;
+  --ink3: 118 125 135;
+  --accent: 42 120 214;
+  --ok: 18 128 82;
+  --warn: 166 104 0;
+  --crit: 196 52 52;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: 14 16 19;
+    --surface: 22 25 29;
+    --sunken: 17 19 23;
+    --line: 44 49 56;
+    --ink: 231 233 236;
+    --ink2: 166 172 181;
+    --ink3: 120 127 137;
+    --accent: 57 135 229;
+    --ok: 45 170 115;
+    --warn: 214 150 30;
+    --crit: 230 103 103;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: 14 16 19;
+  --surface: 22 25 29;
+  --sunken: 17 19 23;
+  --line: 44 49 56;
+  --ink: 231 233 236;
+  --ink2: 166 172 181;
+  --ink3: 120 127 137;
+  --accent: 57 135 229;
+  --ok: 45 170 115;
+  --warn: 214 150 30;
+  --crit: 230 103 103;
+}
 
-/* A restrained light theme is available from the top-bar theme control. */
-.light-theme { background: #f3f5fb !important; color: #172033 !important; }
-.light-theme.dashboard-shell { background-image: radial-gradient(ellipse at 75% -12%, rgba(139, 92, 246, .06), transparent 42%); }
-.light-theme header { background: rgba(248, 250, 255, .92) !important; border-color: #e4e8f1 !important; }
-.light-theme aside { background: #fff !important; border-color: #e4e8f1 !important; }
-.light-theme [class*="bg-[#11182a]"], .light-theme [class*="bg-[#131b2e]"], .light-theme [class*="bg-[#0c1222]"] { background-color: #fff !important; }
-.light-theme [class*="bg-[#0b1020]"] { background-color: #f3f5fb !important; }
-.light-theme [class*="border-white/"] { border-color: #e4e8f1 !important; }
-.light-theme [class*="text-slate-100"], .light-theme [class*="text-slate-200"] { color: #172033 !important; }
-.light-theme [class*="text-slate-300"] { color: #34415a !important; }
-.light-theme [class*="text-slate-400"], .light-theme [class*="text-slate-500"] { color: #69758b !important; }
-.light-theme [class*="hover:bg-white"]:hover { background-color: #eef0f7 !important; }
-.light-theme .recharts-cartesian-grid-horizontal line, .light-theme .recharts-cartesian-grid-vertical line { stroke: rgba(71, 85, 105, .13); }
+html, body { background: rgb(var(--bg)); color: rgb(var(--ink)); }
+body { margin: 0; min-width: 320px; font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 1px; }
+
+.recharts-cartesian-grid line { stroke: rgb(var(--line)); }
+.recharts-text { fill: rgb(var(--ink3)); font-size: 11px; }
+.recharts-tooltip-cursor { fill: rgb(var(--ink) / 0.05); }
+
+/* ---- Motion: short, purposeful, disabled for prefers-reduced-motion ---- */
+@keyframes fa-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes fa-shake { 10%, 90% { transform: translateX(-1px); } 30%, 70% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
+@keyframes fa-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes fa-shimmer { from { background-position: -200px 0; } to { background-position: calc(200px + 100%) 0; } }
+
+.fa-enter { animation: fa-rise .32s cubic-bezier(.2,.7,.2,1) both; }
+
+.fa-page > div > *:nth-child(2) { animation-delay: .04s; }
+.fa-page > div > *:nth-child(3) { animation-delay: .08s; }
+.fa-page > div > *:nth-child(4) { animation-delay: .12s; }
+.fa-page > div > *:nth-child(5) { animation-delay: .16s; }
+.fa-page > div > *:nth-child(n+6) { animation-delay: .2s; }
+.fa-page > div > * { animation: fa-rise .36s cubic-bezier(.2,.7,.2,1) both; }
+.fa-shake { animation: fa-shake .4s ease-in-out both; }
+.fa-pulse { animation: fa-pulse 2.4s ease-in-out infinite; }
+.fa-skeleton { background: linear-gradient(90deg, rgb(var(--sunken)) 0, rgb(var(--line) / .6) 50%, rgb(var(--sunken)) 100%) no-repeat;
+  background-size: 200px 100%; background-color: rgb(var(--sunken)); animation: fa-shimmer 1.2s linear infinite; }
+
+section { transition: border-color .2s ease, box-shadow .2s ease; }
+section:hover { border-color: rgb(var(--ink) / .14); }
+tbody tr { transition: background-color .12s ease; }
+button, a, input, select, textarea { transition-property: color, background-color, border-color, opacity, transform, box-shadow; transition-duration: .15s; }
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
