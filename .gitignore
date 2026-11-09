@@ -22,11 +22,11 @@ data/*
 
 # ---- Trained models, run records, release bundles ---------------------------
 # weights + predictions (ship via GitHub Release, not git)
-models/
+/models/
 # per-run JSON records
-runs/
+/runs/
 # scripts/package_artifacts.py output
-release/
+/release/
 # derived from the raw dataset
 app/demo_samples.json
 # large per-tick trace (included in the release bundle)
