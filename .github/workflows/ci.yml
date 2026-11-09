@@ -21,6 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
+          pip install -r requirements-dev.txt
           pip install -e ".[dev]" --no-deps
       - name: Lint
         run: |
@@ -52,9 +53,19 @@ jobs:
       - run: npm run build
 
   docker:
-    if: github.ref == 'refs/heads/main'
+    # Multi-arch build check (amd64 for laptops/x86 VMs, arm64 for Oracle Ampere A1).
+    # main only (CLAUDE.md §11) or manual: the arm64 half runs under QEMU and is slow.
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     needs: [test, frontend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t bt185-faultaware .
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build linux/amd64 + linux/arm64 (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: bt185-faultaware:ci

@@ -14,6 +14,7 @@ switch ($Target) {
         Run @("uv", "venv", ".venv", "--python", "3.11")
         Run @("uv", "pip", "install", "--python", $Py, "torch", "--index-url", "https://download.pytorch.org/whl/cu128")
         Run @("uv", "pip", "install", "--python", $Py, "-r", "requirements.txt")
+        Run @("uv", "pip", "install", "--python", $Py, "-r", "requirements-dev.txt")
         Run @("uv", "pip", "install", "--python", $Py, "-e", ".[dev]", "--no-deps")
         Run @($Py, "-m", "pre_commit", "install")
     }

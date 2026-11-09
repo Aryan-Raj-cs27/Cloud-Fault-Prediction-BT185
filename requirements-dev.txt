@@ -1,0 +1,13 @@
+# Pinned development tools (lint, type-check, tests, hooks). Install after requirements.txt:
+#   pip install -r requirements-dev.txt
+# Kept separate because `pip install -e ".[dev]" --no-deps` installs the package but NOT these.
+pytest==9.2.0
+pytest-cov==7.1.0
+coverage==7.17.2
+httpx==0.28.1
+ruff==0.17.4
+mypy==2.4.1
+pandas-stubs==3.1.0.261029
+types-PyYAML==6.0.12.20261103
+pre-commit==4.7.0
+nbstripout==0.9.1

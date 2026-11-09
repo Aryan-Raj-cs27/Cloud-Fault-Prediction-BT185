@@ -12,6 +12,7 @@ setup:            ## create venv, install deps + pre-commit hooks
 	uv venv .venv --python 3.11
 	uv pip install --python $(PY) torch --index-url $(TORCH_INDEX)
 	uv pip install --python $(PY) -r requirements.txt
+	uv pip install --python $(PY) -r requirements-dev.txt
 	uv pip install --python $(PY) -e ".[dev]" --no-deps
 	$(PY) -m pre_commit install
 
