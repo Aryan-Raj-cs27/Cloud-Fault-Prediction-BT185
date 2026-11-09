@@ -47,6 +47,18 @@ def serving_files() -> list[Path]:
     return [p.relative_to(ROOT) for p in files]
 
 
+def write_checksum(archive: Path) -> str:
+    """Write ``<archive>.sha256`` in ``sha256sum`` format and return the hex digest.
+
+    The line ending is forced to LF: on Windows ``write_text`` would emit CRLF, and
+    ``sha256sum -c`` on Linux/macOS then looks for a file named ``"<archive>\\r"``.
+    """
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    sidecar = archive.with_name(archive.name + ".sha256")
+    sidecar.write_text(f"{digest}  {archive.name}\n", encoding="utf-8", newline="\n")
+    return digest
+
+
 def main() -> None:
     """Write the archive and its checksum."""
     out_dir = ROOT / "release"
@@ -56,10 +68,7 @@ def main() -> None:
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for rel in files:
             zf.write(ROOT / rel, rel.as_posix())
-    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
-    (out_dir / "faultaware-artifacts.zip.sha256").write_text(
-        f"{digest}  {archive.name}\n", encoding="utf-8"
-    )
+    digest = write_checksum(archive)
     size_mb = archive.stat().st_size / 1e6
     print(f"{archive} ({len(files)} files, {size_mb:.1f} MB)\nsha256 {digest}")
 
