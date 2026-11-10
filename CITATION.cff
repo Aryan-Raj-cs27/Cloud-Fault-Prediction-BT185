@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below, and also cite the HDFS dataset (Xu et al., SOSP 2009) and Loghub."
+title: "FaultAware: Fault-Aware Machine Learning and Deep Learning-Based Algorithm for Cloud Architecture (BT-185)"
+type: software
+version: 1.1.0
+date-released: 2026-11-08
+license: MIT
+repository-code: "https://github.com/Aryan-Raj-cs27/Cloud-Fault-Prediction-BT185"
+authors:
+  - family-names: Raj
+    given-names: Aryan
+  - family-names: Kumar
+    given-names: Dheeraj
+  - family-names: Kumar
+    given-names: Navneet
+  - family-names: Kumar
+    given-names: Priyansh
+contact:
+  - name: "Ms. Niharika Chaudhary (project guide), IILM University"
+keywords:
+  - cloud computing
+  - fault prediction
+  - log anomaly detection
+  - fault-aware scheduling
+  - deep learning
+  - HDFS

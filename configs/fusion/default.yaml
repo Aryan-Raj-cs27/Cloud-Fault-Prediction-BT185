@@ -1,0 +1,7 @@
+# Risk fusion r = alpha * p_cal + (1 - alpha) * a   (CLAUDE.md §2.1)
+supervised_model: auto        # auto = best supervised model by validation PR-AUC
+anomaly_model: auto           # auto = best unsupervised model by validation PR-AUC
+calibration: isotonic         # isotonic | sigmoid | none  (fitted on validation)
+alpha_grid: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+threshold_objective: f1       # f1 | cost
+cost: {false_positive: 1.0, false_negative: 10.0}

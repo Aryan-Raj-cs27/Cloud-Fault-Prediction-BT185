@@ -1,0 +1,24 @@
+# Root configuration. Every hyperparameter used in src/ is read from configs/.
+# Sub-configs are merged by faultaware.utils.config.load_config().
+seed: 42
+seeds_for_reporting: [0, 1, 2, 3, 4]
+
+paths:
+  raw_dir: data/raw
+  interim_dir: data/interim
+  processed_dir: data/processed
+  models_dir: models
+  runs_dir: runs
+  reports_dir: reports
+  figures_dir: reports/figures
+  tables_dir: reports/tables
+
+defaults:
+  data: hdfs
+  train: default
+  fusion: default
+  scheduler: fars
+  simulator: default
+
+models: [always_zero, random_rate, rule_warn, logreg, random_forest, xgboost,
+         lstm, gru, cnn_lstm, transformer, iforest, lstm_ae]

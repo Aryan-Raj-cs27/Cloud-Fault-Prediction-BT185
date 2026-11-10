@@ -1,0 +1,33 @@
+# Loghub HDFS_v1 (Xu et al., SOSP 2009). See data/README.md for provenance.
+dataset: hdfs_v1
+raw_log: data/raw/HDFS.log
+raw_labels: data/raw/anomaly_label.csv
+download_url: https://zenodo.org/records/8196385/files/HDFS_v1.zip?download=1
+
+events_file: data/interim/hdfs_events.parquet
+templates_file: data/interim/hdfs_templates.csv
+sessions_file: data/processed/sessions.parquet
+split_file: data/processed/split.parquet
+
+parse:
+  n_workers: 8
+  chunk_lines: 200000
+
+# Chronological split on block start time (first log line of the block).
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  # Blocks starting within `gap_minutes` after a split boundary are dropped so the
+  # periods are separated by at least the prediction horizon (CLAUDE.md §7.1).
+  gap_minutes: 30
+
+# Early-warning setting ("horizon" analogue for session data, see docs/DECISIONS.md D-003):
+# a prediction is made after observing only the first `observe_seconds` of a block's
+# lifetime; `null` means the full session (post-hoc detection).
+observation_windows: [null, 60, 10]
+default_observation: 60      # primary task: early warning after 60 s (D-003)
+
+features:
+  max_seq_len: 64          # sequences are truncated to their FIRST max_seq_len events
+  min_template_count: 1    # templates seen fewer times in TRAIN are mapped to <UNK>

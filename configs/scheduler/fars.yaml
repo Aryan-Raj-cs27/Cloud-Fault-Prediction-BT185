@@ -1,0 +1,13 @@
+# FARS — Fault-Aware Risk-based Scheduler (CLAUDE.md §2.1)
+name: fars
+# tau_low / tau_high are tuned on validation simulations (scripts/run_simulation.py --tune)
+# and written to configs/scheduler/fars_tuned.yaml; these are the pre-tuning defaults.
+tau_low: 0.3
+tau_high: 0.6
+tau_grid_low: [0.1, 0.2, 0.3, 0.4, 0.5]
+tau_grid_high: [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+weights: {free_capacity: 1.0, risk: 2.0, migration_cost: 0.5}
+risk_smoothing: 0.5            # EWMA factor on per-node risk (1.0 = no smoothing)
+elevated_checkpoint_interval_min: 10
+baselines: [random, round_robin, first_fit, best_fit, least_loaded, reactive]
+reactive_cooldown_min: 60      # reactive baseline avoids nodes that failed this recently

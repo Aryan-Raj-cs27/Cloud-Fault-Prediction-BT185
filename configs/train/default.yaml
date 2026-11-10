@@ -1,0 +1,14 @@
+# Shared deep-learning training settings (CLAUDE.md §19).
+batch_size: 2048
+eval_batch_size: 8192
+max_epochs: 25
+early_stopping_patience: 4
+optimizer: adamw
+lr: 2.0e-3            # scaled with batch size 2048 (sqrt rule)
+weight_decay: 1.0e-4
+grad_clip: 1.0
+lr_scheduler: {factor: 0.5, patience: 2}
+imbalance: class_weight   # class_weight | focal | none
+focal_gamma: 2.0
+device: auto              # auto | cpu | cuda
+num_threads: 8

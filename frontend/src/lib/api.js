@@ -1,10 +1,8 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
-const PREDICTION_ENDPOINT = import.meta.env.VITE_PREDICTION_ENDPOINT || '/predict';
-const HEALTH_ENDPOINT = import.meta.env.VITE_HEALTH_ENDPOINT || '/health';
-const METRICS_ENDPOINT = import.meta.env.VITE_METRICS_ENDPOINT || '/metrics';
+// All requests are same-origin under /api (Vite proxy in dev, FastAPI in production).
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 
-function endpointUrl(path) {
-  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+export class ApiError extends Error {
+  constructor(message, status) { super(message); this.status = status; }
 }
 
 async function request(path, options = {}) {
@@ -12,60 +10,77 @@ async function request(path, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch(endpointUrl(path), {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
-      signal: options.signal || controller.signal,
+      credentials: 'same-origin',
+      signal: controller.signal,
       headers: { Accept: 'application/json', ...options.headers },
     });
     const latency = Math.round(performance.now() - startedAt);
     if (!response.ok) {
-      const message = await response.text().catch(() => '');
-      throw new Error(message || `API request failed (${response.status})`);
+      let message = '';
+      try { message = (await response.json())?.detail; } catch { /* non-JSON error body */ }
+      if (response.status === 401 && !path.startsWith('/auth/')) window.dispatchEvent(new Event('fa:unauthorized'));
+      throw new ApiError(typeof message === 'string' && message ? message : `Request failed (${response.status})`, response.status);
     }
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : {};
-    return { data, latency };
+    return { data: await response.json(), latency };
+  } catch (error) {
+    if (error.name === 'AbortError') throw new ApiError('The server did not answer within 15 s.', 0);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError('Cannot reach the server.', 0);
   } finally {
     clearTimeout(timeout);
   }
 }
 
-/** Normalize common teammate API response formats into one UI-friendly shape. */
-export function normalizePrediction(payload, latency = 0, model = 'random_forest') {
-  const result = payload?.prediction ?? payload?.result ?? payload?.label ?? payload?.status ?? 'Normal';
-  const raw = Array.isArray(result) ? result[0] : result;
-  const isFault = typeof raw === 'number' ? raw !== 0 : /anomaly|fault|fail|abnormal|1/i.test(String(raw));
-  const confidenceRaw = payload?.confidence ?? payload?.probability ?? payload?.score ?? payload?.confidence_score;
-  let confidence = Number(Array.isArray(confidenceRaw) ? confidenceRaw[0] : confidenceRaw);
-  if (!Number.isFinite(confidence)) confidence = isFault ? 0.91 : 0.97;
-  if (confidence <= 1) confidence *= 100;
+const postJson = (path, body) => request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+export const WINDOWS = {
+  w60: { label: 'Early warning · 60 s', short: '60 s' },
+  w10: { label: 'Very early · 10 s', short: '10 s' },
+  full: { label: 'Full session (detection)', short: 'Full' },
+};
+
+/** Map the /predict response into the UI record shape. */
+export function normalizePrediction(payload, latency = 0, truth = null, blockId = null) {
   return {
-    status: isFault ? 'Anomaly' : 'Normal',
-    confidence: Math.min(100, Math.max(0, Math.round(confidence))),
-    latency: Number(payload?.latency_ms ?? payload?.latency ?? latency) || latency,
-    model: payload?.model || model,
-    timestamp: payload?.timestamp || new Date().toISOString(),
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    status: payload.prediction === 1 ? 'Anomaly' : 'Normal',
+    risk: Math.round(payload.risk * 1000) / 10,
+    riskLevel: payload.risk_level,
+    latency: Number(payload.latency_ms ?? latency),
+    window: payload.window,
+    truth,
+    blockId,
+    timestamp: new Date().toISOString(),
     raw: payload,
   };
 }
 
-export async function fetchPrediction(features, model) {
-  const { data, latency } = await request(PREDICTION_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...features, model }),
-  });
-  return normalizePrediction(data, latency, model);
+export async function fetchPrediction(logLines, window, truth = null, blockId = null) {
+  const { data, latency } = await postJson('/predict', { log_lines: logLines, window });
+  return normalizePrediction(data, latency, truth, blockId);
 }
 
-export async function fetchHealth() {
-  return request(HEALTH_ENDPOINT, { method: 'GET' });
+export const login = (username, password) => postJson('/auth/login', { username, password });
+export const logout = () => request('/auth/logout', { method: 'POST' });
+export const fetchMe = () => request('/auth/me');
+export const fetchHealth = () => request('/health');
+export const fetchMetrics = (window) => request(`/metrics${window ? `?window=${encodeURIComponent(window)}` : ''}`);
+export const fetchSimulation = () => request('/simulation?max_points=240');
+export const fetchSample = (label) => request(`/samples/next${label ? `?label=${label}` : ''}`);
+
+/** Group raw HDFS lines by block id (a line can mention several blocks). */
+export function groupLinesByBlock(text) {
+  const groups = new Map();
+  for (const line of text.split(/\r?\n/)) {
+    if (line.length > 4000) continue;
+    for (const block of new Set(line.match(/blk_-?\d+/g) || [])) {
+      if (!groups.has(block)) groups.set(block, []);
+      groups.get(block).push(line);
+    }
+  }
+  return groups;
 }
 
-export async function fetchMetrics() {
-  return request(METRICS_ENDPOINT, { method: 'GET' });
-}
-
-export function getApiBaseUrl() {
-  return API_BASE_URL || 'Not configured';
-}
+export const getApiBaseUrl = () => API_BASE_URL;
