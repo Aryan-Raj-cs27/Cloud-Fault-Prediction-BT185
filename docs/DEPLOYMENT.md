@@ -81,8 +81,8 @@ cd faultaware
 ```
 Download the release bundle (both files) from the GitHub Release:
 ```bash
-curl -LO https://github.com/Aryan-Raj-cs27/Cloud-Fault-Prediction-BT185/releases/download/v1.0.0/faultaware-artifacts.zip
-curl -LO https://github.com/Aryan-Raj-cs27/Cloud-Fault-Prediction-BT185/releases/download/v1.0.0/faultaware-artifacts.zip.sha256
+curl -LO https://github.com/Aryan-Raj-cs27/Cloud-Fault-Prediction-BT185/releases/download/v1.1.0/faultaware-artifacts.zip
+curl -LO https://github.com/Aryan-Raj-cs27/Cloud-Fault-Prediction-BT185/releases/download/v1.1.0/faultaware-artifacts.zip.sha256
 ```
 If the release isn't published yet, copy the files from the training machine instead:
 `scp -i <key> release/faultaware-artifacts.zip* ubuntu@<public-ip>:~/faultaware/`

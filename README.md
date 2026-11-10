@@ -94,7 +94,7 @@ If git reports *dubious ownership* (common for an existing folder after a Window
 `git config --global --add safe.directory <full-path-to-repo>`.
 
 **3. Get the trained models.** Download `faultaware-artifacts.zip` and `faultaware-artifacts.zip.sha256`
-from the GitHub Release (`v1.0.0`) into the repository folder, then run:
+from the GitHub Release (`v1.1.0`) into the repository folder, then run:
 ```powershell
 .venv\Scripts\python.exe scripts\install_artifacts.py faultaware-artifacts.zip   # verifies SHA-256
 ```

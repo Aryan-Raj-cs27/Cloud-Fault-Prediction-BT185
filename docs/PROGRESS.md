@@ -22,8 +22,9 @@ Last updated: 2026-11-10
 - [ ] **arm64 build not verified.** Local Docker can't start (WSL 2 / Virtual Machine Platform missing
   after the reset). Either enable WSL 2 and run `docker buildx build --platform linux/arm64 .`, or
   `gh auth login` and then `gh workflow run ci.yml --ref feat/complete-pipeline`.
-- [ ] GitHub Release `v1.0.0` with the bundle (needs `gh auth login`).
-- [ ] Open the PR `feat/complete-pipeline` → `main`.
+- [x] GitHub Release `v1.1.0` (matches the package version and CHANGELOG) with the bundle + `.sha256`;
+  public download + `sha256sum -c` verified. Created as `v1.0.0`, then renamed the same day.
+- [x] PR #1 `feat/complete-pipeline` → `main` opened (not merged).
 
 ## Earlier notes (2026-11-09, before the PC reset)
 
@@ -65,7 +66,7 @@ Last updated: 2026-11-10
   Cloudflare quick-tunnel section (demo-day backup). Don't deploy anything.
 - [ ] README: "fresh machine setup" section (install, dataset, release bundle, admin user, run with/without
   Docker) + mark Docker as tested.
-- [ ] GitHub Release `v1.0.0` with `release/faultaware-artifacts.zip` + `.sha256` (needs `gh` or the web UI;
+- [x] (done 2026-11-10 as `v1.1.0`) GitHub Release with `release/faultaware-artifacts.zip` + `.sha256` (needs `gh` or the web UI;
   the assistant could not use the stored GitHub token).
 - [ ] Open the PR `feat/complete-pipeline` → `main` with a description of all changes; confirm CI green.
 - [ ] Final summary: done / left for the team / local files not in git.
