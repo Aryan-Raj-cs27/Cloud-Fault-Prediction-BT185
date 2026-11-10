@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- `docs/DEPLOYMENT.md`: Oracle Cloud Always Free (arm64) deployment with Docker, Caddy and DuckDNS;
+  Cloudflare quick tunnel as a demo-day backup; troubleshooting and configuration reference.
+- README "Fresh machine setup" section (tools, venv, release bundle, dataset, account, run modes).
+- `requirements-dev.txt` with pinned lint/type/test tools; CI `docker` job builds `linux/amd64` + `linux/arm64`.
+
+### Fixed
+- `src/faultaware/models/` was excluded by an unanchored `models/` ignore rule (fresh clones crashed).
+- CI lint job never installed ruff/mypy/pytest.
+- Release `.sha256` sidecar is written with LF so `sha256sum -c` works on Linux.
+
 ## [1.1.0] — 2026-11-08
 ### Added
 - Strict early-warning evaluation (`faultaware.eval.metrics.alive_mask`, `evaluate_early_warning`; `reports/tables/early_warning_*.md`) after finding right-censoring at the trace end (D-013). Lead time is now computed over still-running true positives.

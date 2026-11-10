@@ -1,8 +1,31 @@
 # Progress — BT-185
 
-Last updated: 2026-11-09
+Last updated: 2026-11-10
 
-## ▶ Resume here (2026-11-09, work paused for a PC reset)
+## ▶ Resume here (2026-11-10, after the PC reset)
+
+**Done on 2026-11-10:**
+- [x] Fresh Windows: installed uv 0.13.7, Python 3.11.18 (via uv), GitHub CLI 2.103.3. Git 2.56, Node 26,
+  Docker CLI already present. `make` isn't installed: use `.\make.ps1`.
+- [x] Deleted the old `.venv` and stale `venv/` (Python 3.14 from the previous profile). Rebuilt with
+  `.\make.ps1 setup`: torch 2.11.0+cu128, CUDA available (RTX 4050). `npm ci` + `npm run build` OK.
+- [x] `make check`: ruff, strict mypy, **126 passed, coverage 93.42 %** (test run 184 s, slightly over
+  the 3-min target in CLAUDE.md §10.2).
+- [x] CI green for `20a8fd0` (`test` ✅, `frontend` ✅; `docker` skipped because it runs on `main` /
+  manual dispatch only).
+- [x] `docs/DEPLOYMENT.md` written (Oracle A1 + DuckDNS + Caddy, Cloudflare quick tunnel, troubleshooting).
+- [x] README: "Fresh machine setup" section, link to DEPLOYMENT.md, Docker marked tested, 126 tests.
+- [x] PR description drafted (not opened).
+- [x] Release bundle still present locally; sha256 matches `ac46a83e…f341a`.
+
+**Still open:**
+- [ ] **arm64 build not verified.** Local Docker can't start (WSL 2 / Virtual Machine Platform missing
+  after the reset). Either enable WSL 2 and run `docker buildx build --platform linux/arm64 .`, or
+  `gh auth login` and then `gh workflow run ci.yml --ref feat/complete-pipeline`.
+- [ ] GitHub Release `v1.0.0` with the bundle (needs `gh auth login`).
+- [ ] Open the PR `feat/complete-pipeline` → `main`.
+
+## Earlier notes (2026-11-09, before the PC reset)
 
 **Done and pushed on `feat/complete-pipeline`:**
 - [x] **Docker tested** on Windows + Docker Desktop: `docker compose up -d --build` from a *fresh clone*,

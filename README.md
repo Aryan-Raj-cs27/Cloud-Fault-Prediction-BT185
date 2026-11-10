@@ -64,7 +64,57 @@ Requirements: Python 3.11 (via [uv](https://docs.astral.sh/uv/)), Node.js 20+, o
 
 Progress while training: `python scripts/progress.py`. Every target is listed by running `.\make.ps1` with no arguments.
 
+## Fresh machine setup
+Use this on a newly installed PC. It runs the console from the published models without retraining
+(retraining needs `make reproduce` and several GPU hours).
+
+**1. Install the tools.** On Windows, use `winget` from a normal PowerShell:
+```powershell
+winget install --id Git.Git -e
+winget install --id astral-sh.uv -e --scope user
+winget install --id OpenJS.NodeJS.LTS -e
+winget install --id GitHub.cli -e                 # optional: releases, PRs, CI status
+winget install --id Docker.DockerDesktop -e       # optional: only for the Docker/HTTPS stack
+uv python install 3.11                            # uv manages Python 3.11; no system install needed
+```
+Open a new terminal so `PATH` updates. Docker Desktop also needs WSL 2: run `wsl --install --no-distribution`
+in an **administrator** terminal, restart, and make sure virtualisation is enabled in the BIOS/UEFI.
+Linux/macOS: install git, [uv](https://docs.astral.sh/uv/), Node.js 20+ and (optionally) Docker with
+your package manager. Use `make` wherever these steps say `.\make.ps1`.
+
+**2. Clone and install dependencies:**
+```powershell
+git clone https://github.com/Aryan-Raj-cs27/Cloud-Fault-Prediction-BT185.git
+cd Cloud-Fault-Prediction-BT185
+.\make.ps1 setup          # .venv with Python 3.11, CUDA torch, all deps, pre-commit hook
+.\make.ps1 check          # optional: lint + strict mypy + tests (~3 min)
+```
+On a machine without an NVIDIA GPU, use `make setup TORCH_INDEX=https://download.pytorch.org/whl/cpu`.
+If git reports *dubious ownership* (common for an existing folder after a Windows reset), run
+`git config --global --add safe.directory <full-path-to-repo>`.
+
+**3. Get the trained models.** Download `faultaware-artifacts.zip` and `faultaware-artifacts.zip.sha256`
+from the GitHub Release (`v1.0.0`) into the repository folder, then run:
+```powershell
+.venv\Scripts\python.exe scripts\install_artifacts.py faultaware-artifacts.zip   # verifies SHA-256
+```
+
+**4. Dataset (only to retrain or re-evaluate).** Serving the console doesn't need it.
+`.\make.ps1 data` downloads Loghub HDFS_v1 (~1.5 GB of logs) and rebuilds `data/processed/`.
+
+**5. Create the login account:** `.\make.ps1 user` (prompts for a password of at least 12 characters).
+
+**6. Run it, with one of these:**
+| Mode | Command | URL |
+|---|---|---|
+| Development (hot reload) | `.\make.ps1 api` + `.\make.ps1 frontend` in two terminals | http://localhost:5173 |
+| Production, no Docker | `.\make.ps1 serve` | http://localhost:8000 |
+| Production, Docker + HTTPS (tested 2026-11-09) | `docker compose up -d --build` | https://localhost |
+
 ## Deploying from this repository
+For a public server, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. It covers an Oracle Cloud Always
+Free arm64 VM with DuckDNS and automatic HTTPS, plus a Cloudflare quick tunnel as a demo-day backup.
+
 Trained weights, data and credentials are **never committed** (see `.gitignore`). A deployment combines the repository with a release bundle.
 
 **1. On the training machine** (after `make reproduce`):
@@ -80,7 +130,7 @@ python3 scripts/install_artifacts.py faultaware-artifacts.zip      # verifies SH
 python3 scripts/create_user.py --username admin                    # prompts for a password (≥ 12 chars)
 DOMAIN=console.example.org docker compose up -d --build            # HTTPS via Caddy (Let's Encrypt)
 ```
-Use `DOMAIN=localhost` to test locally with Caddy's own certificate authority. Without Docker, run `make serve`: it builds the dashboard and serves the dashboard and API from one process at `http://<host>:8000`. Put it behind an HTTPS reverse proxy and set `FAULTAWARE_COOKIE_SECURE=1`.
+Use `DOMAIN=localhost` to test locally with Caddy's own certificate authority. This stack was tested from a fresh clone on 2026-11-09. On a Linux host, also run `sudo chown 10001:10001 secrets/auth.json` after creating the account: the container runs as uid 10001 (see `docs/DEPLOYMENT.md`). Without Docker, run `make serve`: it builds the dashboard and serves the dashboard and API from one process at `http://<host>:8000`. Put it behind an HTTPS reverse proxy and set `FAULTAWARE_COOKIE_SECURE=1`.
 
 ### Security model
 | Concern | Implementation |
@@ -100,7 +150,7 @@ Use `DOMAIN=localhost` to test locally with Caddy's own certificate authority. W
 To change the password, run `scripts/create_user.py` again and restart the service.
 
 ## Quality gates
-`make check` runs ruff, strict mypy on `src/` and `app/`, and pytest: 123 tests covering unit, leakage, data validation, simulator sanity, API and security. Line coverage is 93 %; CI enforces at least 80 % (`.github/workflows/ci.yml`).
+`make check` runs ruff, strict mypy on `src/` and `app/`, and pytest: 126 tests covering unit, leakage, data validation, simulator sanity, API and security. Line coverage is 93 %; CI enforces at least 80 % (`.github/workflows/ci.yml`).
 
 ## Repository layout
 `src/faultaware/` library (data, features, models, training, fusion, scheduler, simulator, eval) · `scripts/` command-line entry points · `configs/` every hyperparameter · `app/` API and security · `frontend/` React console · `tests/` · `reports/` generated tables and figures · `deploy/` Caddy config · `notebooks/01_eda.ipynb` exploration.
