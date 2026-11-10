@@ -19,9 +19,9 @@ Last updated: 2026-11-10
 - [x] Release bundle still present locally; sha256 matches `ac46a83e…f341a`.
 
 **Still open:**
-- [ ] **arm64 build not verified.** Local Docker can't start (WSL 2 / Virtual Machine Platform missing
-  after the reset). Either enable WSL 2 and run `docker buildx build --platform linux/arm64 .`, or
-  `gh auth login` and then `gh workflow run ci.yml --ref feat/complete-pipeline`.
+- [x] **arm64 build verified on CI** (2026-11-10): manual run 42795319681 on `4217266` (all tests incl.
+  slow, frontend, buildx `linux/amd64` + `linux/arm64`) all green in ~20 min. Local Docker was not
+  running, so the local `docker buildx` check was not done.
 - [x] GitHub Release `v1.1.0` (matches the package version and CHANGELOG) with the bundle + `.sha256`;
   public download + `sha256sum -c` verified. Created as `v1.0.0`, then renamed the same day.
 - [x] PR #1 `feat/complete-pipeline` → `main` opened (not merged).
